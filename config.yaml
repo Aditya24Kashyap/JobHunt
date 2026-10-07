@@ -4,52 +4,250 @@
 # LLM bill small: roughly 2000 raw postings -> 40 candidates before a single
 # token is spent.
 
+# filters:
+#   # Title regexes, matched case-insensitively against the job title only.
+#   # A title must match at least one include AND zero excludes.
+#   #
+#   # Gotcha: "sde" as a bare regex does NOT match "Software Development
+#   # Engineer" — different words entirely. Use \bsde\b for the acronym and
+#   # list the spelled-out variants separately, as below.
+#   include_titles:
+#     - '\b(software|backend|back-end|server|platform|infrastructure|infra|systems|distributed|cloud)\b.*\bengineer\b'
+#     - '\bengineer\b.*\b(backend|back-end|platform|infrastructure|infra|systems|distributed)\b'
+#     - '\bsde\b'
+#     - '\bsde\s*-?\s*(i{1,3}|[123])\b'
+#     - 'software development engineer'
+#     - 'software engineer'
+#     - 'site reliability engineer'
+#     - '\bsre\b'
+#     - 'member of technical staff'
+#     # systems / networking track — matches your DPDK, packet-processing and
+#     # kernel background. Drop these if you widen away from low-level work.
+#     - '\bnetwork(ing)?\s+(software\s+)?engineer\b'
+#     - '\b(kernel|embedded|firmware|driver|packet|dataplane|data plane)\b.*\bengineer\b'
+#     - '\bengineer\b.*\b(kernel|packet|dataplane|networking|performance)\b'
+#     - '\bperformance engineer\b'
+#     - '\bsystems engineer\b'
+#     - '\bc\+\+\b.*\bengineer\b'
+#     - '\bengineer\b.*\bc\+\+\b'
+
+#   # Anything matching these is dropped even if an include matched.
+#   exclude_titles:
+#     - '\b(staff|principal|distinguished|fellow|architect)\b'      # too senior for now
+#     # "Senior" at 2.5 years is a consistent 3-4 from the screener — dropping it
+#     # here is free, dropping it after an LLM call is not. Delete this line once
+#     # you are ~4 years in, or if you want to stretch-apply anyway.
+#     - '\bsenior\b'
+#     - '\b(director|vp|vice president|head of|chief|cto)\b'
+#     - '\b(manager|management)\b'
+#     - '\b(intern|internship|apprentice|trainee)\b'                # too junior
+#     - '\b(sales|account executive|marketing|recruit|support|success)\b'
+#     - '\b(frontend|front-end|ios|android|mobile|game|designer)\b' # wrong discipline
+#     - '\b(data scientist|machine learning scientist|research scientist)\b'
+
 filters:
-  # Title regexes, matched case-insensitively against the job title only.
+
+  # --------------------------------------------------------------------------
+  # TITLE FILTERS
+  # --------------------------------------------------------------------------
   # A title must match at least one include AND zero excludes.
   #
-  # Gotcha: "sde" as a bare regex does NOT match "Software Development
-  # Engineer" — different words entirely. Use \bsde\b for the acronym and
-  # list the spelled-out variants separately, as below.
+  # Covers:
+  # - Software Engineering
+  # - Backend Engineering
+  # - Full-Stack Engineering
+  # - C++ / Systems / Networking
+  # - AI / ML / LLM / GenAI
+  # - Platform / Infrastructure / Cloud / SRE
+  #
+  # Your resume supports these through:
+  # C++, JS, TS, Python, SQL
+  # React, Next.js, Node, Express
+  # PostgreSQL, MongoDB, REST, WebSockets
+  # RAG, embeddings, HNSW, vector search, Ollama/Gemini
+  # OS, multithreading, TCP/IP, TLS, Docker/Linux
+  # --------------------------------------------------------------------------
+
   include_titles:
-    - '\b(software|backend|back-end|server|platform|infrastructure|infra|systems|distributed|cloud)\b.*\bengineer\b'
-    - '\bengineer\b.*\b(backend|back-end|platform|infrastructure|infra|systems|distributed)\b'
+
+    # ---- General Software Engineering --------------------------------------
+
+    - '\bsoftware\s+engineer\b'
+    - '\bsoftware\s+developer\b'
+    - '\bsoftware\s+development\s+engineer\b'
     - '\bsde\b'
     - '\bsde\s*-?\s*(i{1,3}|[123])\b'
-    - 'software development engineer'
-    - 'software engineer'
-    - 'site reliability engineer'
-    - '\bsre\b'
-    - 'member of technical staff'
-    # systems / networking track — matches your DPDK, packet-processing and
-    # kernel background. Drop these if you widen away from low-level work.
-    - '\bnetwork(ing)?\s+(software\s+)?engineer\b'
-    - '\b(kernel|embedded|firmware|driver|packet|dataplane|data plane)\b.*\bengineer\b'
-    - '\bengineer\b.*\b(kernel|packet|dataplane|networking|performance)\b'
-    - '\bperformance engineer\b'
-    - '\bsystems engineer\b'
-    - '\bc\+\+\b.*\bengineer\b'
-    - '\bengineer\b.*\bc\+\+\b'
+    - '\bsoftware\s+engineering\b.*\bengineer\b'
 
-  # Anything matching these is dropped even if an include matched.
+    # ---- Backend ------------------------------------------------------------
+
+    - '\bbackend\s+engineer\b'
+    - '\bback-end\s+engineer\b'
+    - '\bbackend\s+developer\b'
+    - '\bback-end\s+developer\b'
+    - '\bbackend\b.*\b(engineer|developer)\b'
+    - '\b(engineer|developer)\b.*\bbackend\b'
+    - '\bserver\s+engineer\b'
+    - '\bserver\s+side\s+engineer\b'
+    - '\bapi\s+engineer\b'
+
+    # ---- Full-Stack / Product Engineering ---------------------------------
+
+    - '\bfull[- ]stack\s+engineer\b'
+    - '\bfull[- ]stack\s+developer\b'
+    - '\bfull[- ]stack\b.*\b(engineer|developer)\b'
+    - '\bproduct\s+engineer\b'
+    - '\bapplication\s+engineer\b'
+    - '\bweb\s+engineer\b'
+    - '\bsoftware\s+application\s+engineer\b'
+
+    # ---- C++ / Systems ------------------------------------------------------
+
+    - '\bc\+\+\b.*\b(engineer|developer)\b'
+    - '\b(engineer|developer)\b.*\bc\+\+\b'
+    - '\bcpp\b.*\b(engineer|developer)\b'
+    - '\b(c\+\+|cpp)\s+(software\s+)?engineer\b'
+
+    - '\bsystems\s+engineer\b'
+    - '\bsystems\s+software\s+engineer\b'
+    - '\bsystems\s+software\s+developer\b'
+    - '\bsystem\s+software\s+engineer\b'
+    - '\blow[- ]level\s+software\s+engineer\b'
+    - '\bsoftware\s+systems\s+engineer\b'
+
+    # ---- Networking / Performance -----------------------------------------
+
+    - '\bnetwork(ing)?\s+(software\s+)?engineer\b'
+    - '\bnetwork\s+engineer\b'
+    - '\bnetworking\s+software\s+engineer\b'
+    - '\bperformance\s+engineer\b'
+    - '\bperformance\s+software\s+engineer\b'
+    - '\bnetwork\s+software\s+engineer\b'
+
+    - '\b(kernel|embedded|firmware|driver|packet|dataplane|data\s+plane)\b.*\bengineer\b'
+    - '\bengineer\b.*\b(kernel|packet|dataplane|networking|performance)\b'
+
+    # ---- Infrastructure / Platform / Cloud --------------------------------
+
+    - '\bplatform\s+engineer\b'
+    - '\bplatform\s+software\s+engineer\b'
+    - '\binfrastructure\s+engineer\b'
+    - '\binfrastructure\s+software\s+engineer\b'
+    - '\bcloud\s+engineer\b'
+    - '\bcloud\s+software\s+engineer\b'
+    - '\bsite\s+reliability\s+engineer\b'
+    - '\bsre\b'
+    - '\bdevops\s+engineer\b'
+
+    # ---- AI / ML / LLM / GenAI ---------------------------------------------
+
+    # Your resume has actual LLM/RAG/vector DB implementation,
+    # not merely AI coursework.
+
+    - '\bai\s+engineer\b'
+    - '\bartificial\s+intelligence\s+engineer\b'
+    - '\bai\s+software\s+engineer\b'
+    - '\bai\s+developer\b'
+
+    - '\bmachine\s+learning\s+engineer\b'
+    - '\bml\s+engineer\b'
+    - '\bmachine\s+learning\s+software\s+engineer\b'
+    - '\bml\s+software\s+engineer\b'
+
+    - '\bllm\s+engineer\b'
+    - '\bllm\s+software\s+engineer\b'
+    - '\bllm\s+developer\b'
+    - '\bgenerative\s+ai\s+engineer\b'
+    - '\bgenai\s+engineer\b'
+    - '\bgen\s*ai\s+engineer\b'
+
+    - '\bai\b.*\b(engineer|developer)\b'
+    - '\bml\b.*\b(engineer|developer)\b'
+    - '\bllm\b.*\b(engineer|developer)\b'
+    - '\bgenai\b.*\b(engineer|developer)\b'
+    - '\bgenerative\s+ai\b.*\b(engineer|developer)\b'
+
+    # ---- General Entry-Level Technical Titles ------------------------------
+
+    - '\bmember\s+of\s+technical\s+staff\b'
+    - '\btechnical\s+engineer\b'
+    - '\bsoftware\s+engineering\s+associate\b'
+    - '\bassociate\s+software\s+engineer\b'
+    - '\bassociate\s+software\s+developer\b'
+    - '\bjunior\s+software\s+engineer\b'
+    - '\bjunior\s+software\s+developer\b'
+
+
+  # --------------------------------------------------------------------------
+  # EXCLUDE TITLES
+  # --------------------------------------------------------------------------
+  # Do NOT exclude intern/trainee/apprentice:
+  # as a 2026 fresher, these are valid opportunities.
+  # --------------------------------------------------------------------------
+
   exclude_titles:
-    - '\b(staff|principal|distinguished|fellow|architect)\b'      # too senior for now
-    # "Senior" at 2.5 years is a consistent 3-4 from the screener — dropping it
-    # here is free, dropping it after an LLM call is not. Delete this line once
-    # you are ~4 years in, or if you want to stretch-apply anyway.
+
+    # Too senior for current profile
+    - '\b(staff|principal|distinguished|fellow|architect)\b'
     - '\bsenior\b'
+    - '\blead\s+(software|backend|platform|systems|ai|ml)\b'
+
+    # Management / leadership
     - '\b(director|vp|vice president|head of|chief|cto)\b'
     - '\b(manager|management)\b'
-    - '\b(intern|internship|apprentice|trainee)\b'                # too junior
-    - '\b(sales|account executive|marketing|recruit|support|success)\b'
-    - '\b(frontend|front-end|ios|android|mobile|game|designer)\b' # wrong discipline
-    - '\b(data scientist|machine learning scientist|research scientist)\b'
+
+    # Non-engineering functions
+    - '\b(sales|account executive|marketing|recruit|recruiting)\b'
+    - '\b(support|customer success|success manager)\b'
+    - '\baccount manager\b'
+    - '\bsales engineer\b'
+
+    # Disciplines outside your current target
+    - '\b(frontend|front-end)\b'
+    - '\bios\b'
+    - '\bandroid\b'
+    - '\bmobile\b'
+    - '\bgame\b'
+    - '\bdesigner\b'
+    - '\bux\b'
+    - '\bui designer\b'
+
+    # Research-heavy roles that don't match your strongest profile
+    - '\bdata scientist\b'
+    - '\bmachine learning scientist\b'
+    - '\bresearch scientist\b'
+    - '\bresearch engineer\b'
+
+    # Non-target data roles
+    - '\bdata analyst\b'
+    - '\bbusiness analyst\b'
+    - '\bdata entry\b'
+
+    # Not software/engineering roles
+    - '\bqa\b'
+    - '\bquality assurance\b'
+    - '\btest engineer\b'
+    - '\bmanual tester\b'
+
 
   # Substrings matched against "<location> <title>", case-insensitive.
   # Leave empty to accept every location.
   locations:
+    - delhi
+    - new delhi
+    - gurgaon
+    - gurugram
+    - noida
+    - greater noida
+    - faridabad
+    - ghaziabad
     - bangalore
     - bengaluru
+    - pune
+    - hyderabad
+    - chennai
+    - mumbai
+    - navi mumbai
     - india
 
   # If true, anything reading as remote passes the location gate.
